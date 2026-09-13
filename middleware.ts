@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 const PUBLIC_PATHS = ['/login', '/auth/callback', '/privacy']
 
 export async function middleware(request: NextRequest) {
+  if (process.env.TRACKED_DEMO === '1') return NextResponse.next({ request })
   const path = request.nextUrl.pathname
   let response = NextResponse.next({ request })
 

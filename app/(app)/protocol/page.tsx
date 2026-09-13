@@ -90,7 +90,7 @@ export default async function ProtocolPage() {
               <Label>Titration history</Label>
               <ul className="mt-1.5 text-sm space-y-1">
                 <li>
-                  <div className="flex justify-between"><span>Started {mySteps.length ? '' : `${Number(med.dose_mg)} mg`}</span><span className="text-muted">{formatDayShort(med.start_date)}</span></div>
+                  <div className="flex justify-between"><span>Started {Number(mySteps.length ? (mine[mine.length - 1]?.dose_mg ?? med.dose_mg) : med.dose_mg)} mg</span><span className="text-muted">{formatDayShort(med.start_date)}</span></div>
                   {seSummary(afterStep(med.start_date)) && <p className="text-xs text-warn">First week: {seSummary(afterStep(med.start_date))}</p>}
                 </li>
                 {mySteps.map(s => (
