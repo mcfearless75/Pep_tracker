@@ -5,13 +5,14 @@ import { Ring } from '@/components/ui/Ring'
 import { ShotCard } from '@/components/today/ShotCard'
 import { QuickLog } from '@/components/today/QuickLog'
 import { MomentCard } from '@/components/today/MomentCard'
+import { InsightCard } from '@/components/today/InsightCard'
 import { pickMoment } from '@/lib/moments/engine'
 import { isNight } from '@/lib/theme/nightMode'
 import { isoDate, addDays } from '@/lib/dates'
 import { nextDue, dueState, daysUntil, weekOnProtocol } from '@/lib/protocol/schedule'
 import { nextSite } from '@/lib/protocol/sites'
 import { proteinTargetG } from '@/lib/nutrition/targets'
-import type { Medication, Dose, Profile, Meal, WaterLog, SleepLog, WeightLog, SideEffectLog, TrainingLog, TitrationStep, MomentRead } from '@/lib/supabase/types'
+import type { Medication, Dose, Profile, Meal, WaterLog, SleepLog, WeightLog, SideEffectLog, TrainingLog, TitrationStep, MomentRead, Insight, BloodworkResult } from '@/lib/supabase/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,7 +25,7 @@ export default async function TodayPage() {
   const since7 = addDays(now, -7).toISOString()
   const since21 = addDays(now, -21).toISOString()
 
-  const [profileQ, medsQ, dosesQ, mealsQ, waterQ, sleepQ, weightsQ, seQ, trainQ, stepsQ, readsQ] = await Promise.all([
+  const [profileQ, medsQ, dosesQ, mealsQ, waterQ, sleepQ, weightsQ, seQ, trainQ, stepsQ, readsQ, insightQ, bloodsQ] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', uid).maybeSingle<Profile>(),
     supabase.from('medications').select('*').eq('user_id', uid).eq('active', true).order('created_at').returns<Medication[]>(),
     supabase.from('doses').select('id, medication_id, taken_at, dose_mg, site, notes').eq('user_id', uid).order('taken_at', { ascending: false }).limit(60).returns<Dose[]>(),
@@ -36,6 +37,8 @@ export default async function TodayPage() {
     supabase.from('training_logs').select('logged_at').eq('user_id', uid).gte('logged_at', addDays(now, -14).toISOString()).returns<Pick<TrainingLog, 'logged_at'>[]>(),
     supabase.from('titration_steps').select('start_date').eq('user_id', uid).returns<Pick<TitrationStep, 'start_date'>[]>(),
     supabase.from('moment_reads').select('moment_id, read_at').eq('user_id', uid).returns<Pick<MomentRead, 'moment_id' | 'read_at'>[]>(),
+    supabase.from('insights').select('body, week_start').eq('user_id', uid).order('week_start', { ascending: false }).limit(1).maybeSingle<Pick<Insight, 'body' | 'week_start'>>(),
+    supabase.from('bloodwork_results').select('created_at').eq('user_id', uid).gte('created_at', since7).returns<{ created_at: string }[]>(),
   ])
 
   const profile = profileQ.data!
@@ -74,6 +77,7 @@ export default async function TodayPage() {
     isShotDay,
     nightModeActive: nightActive,
     reads: readsQ.data ?? [],
+    bloodworkAddedAt: (bloodsQ.data ?? []).map(b => b.created_at),
   })
 
   const lastSleep = sleepQ.data?.[0]
@@ -81,9 +85,12 @@ export default async function TodayPage() {
 
   return (
     <div className="space-y-3">
-      <header>
-        <Label>{now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}</Label>
-        <h1 className="text-2xl font-extrabold tracking-tight">{greeting}{profile.display_name ? `, ${profile.display_name}` : ''}</h1>
+      <header className="flex justify-between items-end">
+        <div>
+          <Label>{now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}</Label>
+          <h1 className="text-2xl font-extrabold tracking-tight">{greeting}{profile.display_name ? `, ${profile.display_name}` : ''}</h1>
+        </div>
+        <Link href="/settings" className="text-xs font-semibold text-muted pb-1">Settings</Link>
       </header>
 
       {med && due && state ? (
@@ -114,7 +121,7 @@ export default async function TodayPage() {
             <b className="block text-base mt-1 text-protein">Protein</b>
             <span className="text-muted">{proteinToday >= proteinTarget ? 'target hit' : `${Math.round(proteinTarget - proteinToday)} g to go`}</span>
           </Link>
-          <Link href="/today" className="text-center text-xs font-semibold">
+          <Link href="/body" className="text-center text-xs font-semibold">
             <Ring value={(trainQ.data ?? []).filter(t => new Date(t.logged_at) >= addDays(now, -7)).length} max={2} size={64} colour="var(--steps)" />
             <b className="block text-base mt-1">{(trainQ.data ?? []).filter(t => new Date(t.logged_at) >= addDays(now, -7)).length}/2</b><span className="text-muted">Lifts</span>
           </Link>
@@ -136,6 +143,8 @@ export default async function TodayPage() {
       </Link>
 
       {moment && <MomentCard moment={moment} />}
+
+      <InsightCard initial={insightQ.data?.body ?? null} />
 
       <QuickLog userId={uid} lastWeightKg={latestWeight || null} />
     </div>

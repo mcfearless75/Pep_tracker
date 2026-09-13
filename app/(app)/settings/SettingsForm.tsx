@@ -15,6 +15,8 @@ export function SettingsForm({ profile }: { profile: Profile }) {
   const [water, setWater] = useState(String(profile.water_target_ml))
   const [nightStart, setNightStart] = useState(profile.night_mode_start.slice(0, 5))
   const [nightEnd, setNightEnd] = useState(profile.night_mode_end.slice(0, 5))
+  const [wakeGoal, setWakeGoal] = useState(profile.wake_goal.slice(0, 5))
+  const [units, setUnits] = useState<'metric' | 'imperial'>(profile.units)
   const [msg, setMsg] = useState<string | null>(null)
 
   async function save(e: React.FormEvent) {
@@ -22,7 +24,7 @@ export function SettingsForm({ profile }: { profile: Profile }) {
     const supabase = createClient()
     const { error } = await supabase.from('profiles').update({
       display_name: name.trim() || null, protein_g_per_kg: band, protein_target_g: parseInt(target) || null,
-      water_target_ml: parseInt(water) || 2000, night_mode_start: nightStart, night_mode_end: nightEnd,
+      water_target_ml: parseInt(water) || 2000, night_mode_start: nightStart, night_mode_end: nightEnd, wake_goal: wakeGoal, units,
     }).eq('id', profile.id)
     setMsg(error ? error.message : 'Saved')
     if (!error) router.refresh()
@@ -47,6 +49,12 @@ export function SettingsForm({ profile }: { profile: Profile }) {
         <div className="grid grid-cols-2 gap-2">
           <label className="block text-xs font-semibold">Protein target (g)<input inputMode="numeric" className={`${field} mt-1`} value={target} onChange={e => setTarget(e.target.value)} /></label>
           <label className="block text-xs font-semibold">Water target (ml)<input inputMode="numeric" className={`${field} mt-1`} value={water} onChange={e => setWater(e.target.value)} /></label>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="block text-xs font-semibold">Wake goal<input type="time" className={`${field} mt-1`} value={wakeGoal} onChange={e => setWakeGoal(e.target.value)} /></label>
+          <div className="text-xs font-semibold">Units<div className="grid grid-cols-2 gap-1 mt-1">
+            {(['metric', 'imperial'] as const).map(u => <button key={u} type="button" onClick={() => setUnits(u)} className={`rounded-chip py-2 border capitalize ${units === u ? 'bg-accent text-accent-ink border-accent' : 'border-line'}`}>{u}</button>)}
+          </div></div>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <label className="block text-xs font-semibold">Night mode from<input type="time" className={`${field} mt-1`} value={nightStart} onChange={e => setNightStart(e.target.value)} /></label>

@@ -2,12 +2,15 @@ import { createClient } from '@/lib/supabase/server'
 import { Card, Label } from '@/components/ui/Card'
 import { Calculator } from '@/components/protocol/Calculator'
 import { AddStep } from '@/components/protocol/AddStep'
+import { AddMedication } from '@/components/protocol/AddMedication'
+import Link from 'next/link'
 import { presetForName } from '@/lib/protocol/medications'
 import { levelFraction } from '@/lib/protocol/drugLevel'
 import { siteLabel } from '@/lib/protocol/sites'
 import { weekOnProtocol } from '@/lib/protocol/schedule'
 import { formatDayShort } from '@/lib/dates'
-import type { Medication, Dose, TitrationStep } from '@/lib/supabase/types'
+import type { Medication, Dose, TitrationStep, SideEffectLog } from '@/lib/supabase/types'
+import { DAY_MS } from '@/lib/dates'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,20 +18,35 @@ export default async function ProtocolPage() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const uid = user!.id
-  const [medsQ, dosesQ, stepsQ] = await Promise.all([
+  const [medsQ, dosesQ, stepsQ, seQ] = await Promise.all([
     supabase.from('medications').select('*').eq('user_id', uid).eq('active', true).order('created_at').returns<Medication[]>(),
     supabase.from('doses').select('id, medication_id, taken_at, dose_mg, site, notes').eq('user_id', uid).order('taken_at', { ascending: false }).limit(100).returns<Dose[]>(),
     supabase.from('titration_steps').select('id, medication_id, dose_mg, start_date').eq('user_id', uid).order('start_date').returns<TitrationStep[]>(),
+    supabase.from('side_effect_logs').select('logged_at, kind, severity').eq('user_id', uid).order('logged_at').returns<Pick<SideEffectLog, 'logged_at' | 'kind' | 'severity'>[]>(),
   ])
+  const se = seQ.data ?? []
+  // Side effects in the 7 days after a step starts, for the overlay.
+  const afterStep = (startDate: string) => {
+    const t0 = new Date(startDate).getTime()
+    return se.filter(e => { const t = new Date(e.logged_at).getTime(); return t >= t0 && t < t0 + 7 * DAY_MS })
+  }
+  const seSummary = (rows: typeof se) => {
+    if (rows.length === 0) return null
+    const counts = rows.reduce<Record<string, number>>((a, r) => { a[r.kind] = (a[r.kind] ?? 0) + 1; return a }, {})
+    return Object.entries(counts).map(([k, n]) => `${k.replace('_', ' ')} ×${n}`).join(', ')
+  }
   const meds = medsQ.data ?? []
   const doses = dosesQ.data ?? []
   const steps = stepsQ.data ?? []
 
   return (
     <div className="space-y-3">
-      <header>
-        <Label>Protocol</Label>
-        <h1 className="text-2xl font-extrabold tracking-tight">My stack</h1>
+      <header className="flex justify-between items-end">
+        <div>
+          <Label>Protocol</Label>
+          <h1 className="text-2xl font-extrabold tracking-tight">My stack</h1>
+        </div>
+        <Link href="/bloods" className="text-xs font-semibold text-accent pb-1">Bloodwork ›</Link>
       </header>
 
       {meds.map(med => {
@@ -71,9 +89,15 @@ export default async function ProtocolPage() {
             <div>
               <Label>Titration history</Label>
               <ul className="mt-1.5 text-sm space-y-1">
-                <li className="flex justify-between"><span>Started {Number(med.dose_mg)} mg</span><span className="text-muted">{formatDayShort(med.start_date)}</span></li>
+                <li>
+                  <div className="flex justify-between"><span>Started {mySteps.length ? '' : `${Number(med.dose_mg)} mg`}</span><span className="text-muted">{formatDayShort(med.start_date)}</span></div>
+                  {seSummary(afterStep(med.start_date)) && <p className="text-xs text-warn">First week: {seSummary(afterStep(med.start_date))}</p>}
+                </li>
                 {mySteps.map(s => (
-                  <li key={s.id} className="flex justify-between"><span>Stepped to {Number(s.dose_mg)} mg</span><span className="text-muted">{formatDayShort(s.start_date)}</span></li>
+                  <li key={s.id}>
+                    <div className="flex justify-between"><span>Stepped to {Number(s.dose_mg)} mg</span><span className="text-muted">{formatDayShort(s.start_date)}</span></div>
+                    {seSummary(afterStep(s.start_date)) && <p className="text-xs text-warn">First week: {seSummary(afterStep(s.start_date))}</p>}
+                  </li>
                 ))}
               </ul>
               <AddStep med={med} />
@@ -97,6 +121,7 @@ export default async function ProtocolPage() {
         )
       })}
 
+      <AddMedication userId={uid} />
       <Calculator />
     </div>
   )

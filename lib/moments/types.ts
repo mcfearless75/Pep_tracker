@@ -15,6 +15,7 @@ export type TriggerEvent =
   | 'week_12_reached'
   | 'night_mode_first'
   | 'shot_day'
+  | 'bloodwork_added'
 
 export type MomentCheck = {
   question: string

@@ -54,6 +54,14 @@ export function QuickLog({ userId, lastWeightKg }: { userId: string; lastWeightK
         </div>
       </div>
 
+      <div>
+        <p className="text-xs text-muted mb-1.5">Mood · Energy</p>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex gap-1">{[1, 2, 3, 4, 5].map(v => <button key={v} type="button" onClick={() => save('mood_logs', { mood: v }, `Mood ${v}/5 logged`)} className="flex-1 rounded-chip border border-line bg-bg py-1.5 text-xs font-semibold" aria-label={`Mood ${v}`}>{['😞', '😕', '😐', '🙂', '😄'][v - 1]}</button>)}</div>
+          <div className="flex gap-1">{[1, 2, 3, 4, 5].map(v => <button key={v} type="button" onClick={() => save('mood_logs', { energy: v }, `Energy ${v}/5 logged`)} className="flex-1 rounded-chip border border-line bg-bg py-1.5 text-xs font-semibold" aria-label={`Energy ${v}`}>{v}</button>)}</div>
+        </div>
+      </div>
+
       <div className="flex gap-1.5">
         <button type="button" onClick={() => save('training_logs', { kind: 'resistance', minutes: 30 }, 'Lift logged')} className="flex-1 rounded-chip border border-line bg-bg py-2 text-xs font-semibold">Lifted today</button>
         <button type="button" onClick={() => save('training_logs', { kind: 'walk', minutes: 30 }, 'Walk logged')} className="flex-1 rounded-chip border border-line bg-bg py-2 text-xs font-semibold">Walked</button>

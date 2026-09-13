@@ -3,6 +3,7 @@ import { Card, Label } from '@/components/ui/Card'
 import { NightArc } from '@/components/sleep/NightArc'
 import { SleepLogForm } from '@/components/sleep/SleepLogForm'
 import { shotNightCorrelation, proteinCorrelation, baseline } from '@/lib/sleep/correlations'
+import { suggestedBedtime, consistencyScore, readiness } from '@/lib/sleep/plan'
 import { isNight } from '@/lib/theme/nightMode'
 import { isoDate, addDays, formatTime } from '@/lib/dates'
 import type { SleepLog, Dose, Meal, Profile } from '@/lib/supabase/types'
@@ -19,7 +20,7 @@ export default async function SleepPage() {
     supabase.from('sleep_logs').select('*').eq('user_id', uid).gte('night_of', since).order('night_of', { ascending: false }).returns<SleepLog[]>(),
     supabase.from('doses').select('taken_at').eq('user_id', uid).gte('taken_at', since).returns<Pick<Dose, 'taken_at'>[]>(),
     supabase.from('meals').select('logged_date, protein_g').eq('user_id', uid).gte('logged_date', since).returns<Pick<Meal, 'logged_date' | 'protein_g'>[]>(),
-    supabase.from('profiles').select('protein_target_g, night_mode_start, night_mode_end').eq('id', uid).maybeSingle<Pick<Profile, 'protein_target_g' | 'night_mode_start' | 'night_mode_end'>>(),
+    supabase.from('profiles').select('protein_target_g, night_mode_start, night_mode_end, wake_goal').eq('id', uid).maybeSingle<Pick<Profile, 'protein_target_g' | 'night_mode_start' | 'night_mode_end' | 'wake_goal'>>(),
   ])
   const nights = sleepQ.data ?? []
   const last = nights[0]
@@ -33,6 +34,11 @@ export default async function SleepPage() {
   const hrvBase = baseline(nights.slice(1, 15).map(n => n.hrv_ms == null ? null : Number(n.hrv_ms)))
   const durBase = baseline(nights.slice(1, 15).map(n => n.duration_min))
   const night = isNight(now, profile.night_mode_start.slice(0, 5), profile.night_mode_end.slice(0, 5))
+  const wakeGoal = profile.wake_goal.slice(0, 5)
+  const bedtime = suggestedBedtime(wakeGoal)
+  const consistency = consistencyScore(nights.slice(0, 7).map(n => n.bedtime))
+  const ready = last ? readiness(last.duration_min, last.hrv_ms == null ? null : Number(last.hrv_ms), hrvBase) : null
+  const evening = now.getHours() >= 18 || night
 
   return (
     <div className="space-y-3">
@@ -50,7 +56,10 @@ export default async function SleepPage() {
               <Stat label="HRV" value={last.hrv_ms ? `${Number(last.hrv_ms)} ms` : '—'} delta={hrvBase && last.hrv_ms ? Number(last.hrv_ms) - hrvBase : null} unit="ms" />
               <Stat label="Bedtime" value={last.bedtime ? formatTime(last.bedtime) : '—'} />
               <Stat label="Resting HR" value={last.resting_hr ? `${last.resting_hr} bpm` : '—'} />
+              <Stat label="Consistency" value={consistency == null ? '—' : `${consistency}/100`} />
+              <Stat label="Readiness" value={ready ? ready.level[0].toUpperCase() + ready.level.slice(1) : '—'} tone={ready?.level} />
             </div>
+            {ready && <p className="text-xs text-muted mt-2">{ready.text}</p>}
           </>
         ) : (
           <p className="text-sm text-muted">No sleep logged for last night. Add it below, or connect a wearable when that ships.</p>
@@ -65,6 +74,20 @@ export default async function SleepPage() {
       ))}
       {corr.length === 0 && nights.length > 0 && (
         <p className="text-xs text-muted px-1">Patterns appear after about ten logged nights, including at least three shot nights.</p>
+      )}
+
+      {evening && (
+        <Card className="border-sleep/50">
+          <Label className="text-sleep">Tonight</Label>
+          <p className="text-lg font-extrabold mt-0.5">In bed by {bedtime}</p>
+          <p className="text-xs text-muted">For 7.5 h before your {wakeGoal} wake goal. Change the goal in Settings.</p>
+          <ul className="mt-2 text-sm space-y-1">
+            <li>· No big meal or alcohol in the next 3 hours</li>
+            <li>· Water now, not at bedtime</li>
+            <li>· Screens down 30 minutes before</li>
+            <li>· Night mode is {night ? 'on' : `on from ${profile.night_mode_start.slice(0, 5)}`}</li>
+          </ul>
+        </Card>
       )}
 
       <SleepLogForm userId={uid} />
@@ -84,11 +107,12 @@ export default async function SleepPage() {
   )
 }
 
-function Stat({ label, value, delta, unit }: { label: string; value: string; delta?: number | null; unit?: string }) {
+function Stat({ label, value, delta, unit, tone }: { label: string; value: string; delta?: number | null; unit?: string; tone?: 'green' | 'amber' | 'red' }) {
+  const toneClass = tone === 'green' ? 'text-good' : tone === 'amber' ? 'text-warn' : tone === 'red' ? 'text-bad' : ''
   return (
     <div className="rounded-chip bg-bg border border-line p-2.5">
       <Label>{label}</Label>
-      <p className="text-lg font-extrabold">{value}{delta != null && Math.abs(delta) >= 1 && <span className={`text-xs ml-1 ${delta >= 0 ? 'text-good' : 'text-bad'}`}>{delta > 0 ? '+' : ''}{Math.round(delta)}{unit ? ` ${unit}` : ''}</span>}</p>
+      <p className={`text-lg font-extrabold ${toneClass}`}>{value}{delta != null && Math.abs(delta) >= 1 && <span className={`text-xs ml-1 ${delta >= 0 ? 'text-good' : 'text-bad'}`}>{delta > 0 ? '+' : ''}{Math.round(delta)}{unit ? ` ${unit}` : ''}</span>}</p>
     </div>
   )
 }

@@ -21,15 +21,19 @@ npm run build
 
 ## Layout
 ```
-app/(app)/        tabbed screens: today, protocol, food, sleep, learn, settings
+app/(app)/        tabbed screens: today, protocol, food, sleep, learn; plus body, bloods, report, settings
 app/welcome       onboarding (medicine, dose, shot day, weight, protein band, 18+ gate)
 app/login         magic-link auth; app/auth/callback exchanges the code
-app/api/          ai/meal-photo, food/search
+app/api/          ai/meal-photo, ai/bloodwork, ai/weekly-insight, food/search, export, account/delete
 components/       ui (Card, Ring, TabBar, NightMode), today, protocol, nutrition, sleep, learn
 lib/protocol/     medications presets, drug-level estimate, calculator, site rotation, schedule
 lib/moments/      Moment types, launch content, trigger engine (pure, tested)
 lib/learn/        guide library
-lib/sleep/        correlations
+lib/sleep/        correlations, plan (bedtime, consistency, readiness)
+lib/bloodwork/    UK marker ranges and explainers
+lib/insights/     weekly summary prompt builder
+lib/export/       csv
+lib/units.ts      metric/imperial display and parsing
 lib/theme/        night mode window
 supabase/migrations/
 __tests__/lib/

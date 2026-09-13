@@ -294,6 +294,25 @@ export const MOMENTS: Moment[] = [
     ],
     sources: ['Chang et al., PNAS 2015, evening light exposure and sleep'],
   },
+  {
+    id: 'reading-bloods',
+    title: 'What your bloods can and cannot tell you',
+    hook: 'You added results. Here is how to read them without panicking.',
+    readSeconds: 60,
+    trigger: 'bloodwork_added',
+    priority: 3,
+    cooldownDays: 60,
+    tag: 'starting',
+    body: [
+      'A single result outside the range is a prompt for a question, not a verdict. Labs differ, samples vary, and a cold or a hard workout can nudge several markers.',
+      '**Look for direction:** the change since your last test matters more than one number. The app lines results up by date for that reason.',
+      '**The ones GLP-1 tends to improve:** HbA1c, triglycerides, ALT, CRP. **The ones to watch as you eat less:** ferritin, B12, vitamin D.',
+      '**Take it to your GP:** anything flagged, plus the question "what would you like repeated and when?"',
+    ],
+    prescriberPrompt: 'Ask which flagged results matter and which are noise.',
+    sources: ['NHS lab reference ranges', 'NICE NG28'],
+    guideId: 'reading-your-bloodwork',
+  },
 ]
 
 export function momentById(id: string): Moment | undefined {

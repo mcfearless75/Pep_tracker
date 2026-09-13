@@ -19,6 +19,7 @@ export type Profile = {
   water_target_ml: number
   night_mode_start: string
   night_mode_end: string
+  wake_goal: string
   onboarded_at: string | null
 }
 
@@ -80,3 +81,6 @@ export type SleepLog = {
 }
 export type TrainingLog = { id: string; logged_at: string; kind: 'resistance' | 'cardio' | 'walk' | 'other'; minutes: number | null; felt: number | null }
 export type MomentRead = { moment_id: string; read_at: string; correct: boolean | null }
+export type BloodworkResult = { id: string; taken_on: string; marker: string; value: number; unit: string | null; source: 'manual' | 'photo' | 'pdf'; notes: string | null }
+export type Insight = { id: string; week_start: string; body: string; model: string | null; created_at: string }
+export type MoodLog = { id: string; logged_at: string; mood: number | null; energy: number | null; notes: string | null }
