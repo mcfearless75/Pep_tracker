@@ -117,6 +117,12 @@ Why not Expo: the scanner, barcode, Supabase SSR pattern and store pipeline alre
 - Meal log median time under 12 seconds.
 - One signed clinic pilot.
 
+## Status (13 Sept 2026)
+
+Shipped: onboarding, Today, Protocol with calculator and titration overlay, Food with photo scanner and barcode, Sleep with correlations and Tonight panel, Body trend, Bloodwork with import, weekly insight, Learn with search, prescriber report, export and delete. Live on Vercel, Supabase in eu-west-2.
+
+Outstanding: wearable sync, push reminders, RevenueCat paywall, native store builds, progress photos, clinic tier.
+
 ## 12-week build plan
 
 | Weeks | Ship |

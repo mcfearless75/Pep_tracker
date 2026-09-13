@@ -18,6 +18,7 @@ export type Snapshot = {
   isShotDay: boolean
   nightModeActive: boolean
   reads: { moment_id: string; read_at: string }[]
+  bloodworkAddedAt?: string[]
 }
 
 /** Derive which trigger events are currently true from the user's data. */
@@ -56,6 +57,7 @@ export function activeEvents(s: Snapshot): Set<TriggerEvent> {
 
   if (med && t - new Date(med.start_date).getTime() >= 84 * DAY_MS) ev.add('week_12_reached')
   if (s.isShotDay) ev.add('shot_day')
+  if ((s.bloodworkAddedAt ?? []).some(b => within(b, 2))) ev.add('bloodwork_added')
   if (s.nightModeActive) ev.add('night_mode_first')
 
   return ev

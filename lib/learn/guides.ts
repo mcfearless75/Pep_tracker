@@ -1,7 +1,7 @@
 export type Guide = {
   id: string
   title: string
-  shelf: 'Starting out' | 'Injections' | 'Side effects' | 'Food and protein' | 'Muscle' | 'Sleep' | 'Bloodwork' | 'Plateaus and maintenance' | 'Peptides'
+  shelf: 'Starting out' | 'Injections' | 'Side effects' | 'Food and protein' | 'Muscle' | 'Sleep' | 'Bloodwork' | 'Plateaus and maintenance' | 'Peptides' | 'Talking to your prescriber'
   readMinutes: number
   summary: string
   sections: { heading: string; paragraphs: string[] }[]
@@ -158,6 +158,49 @@ export const GUIDES: Guide[] = [
     ],
     prescriberPrompt: 'Tell your GP what you are taking. They cannot help with what they do not know about.',
     sources: ['MHRA enforcement, October 2025', 'MHRA unlicensed medicines guidance'],
+  },
+  {
+    id: 'hydration-and-fibre',
+    title: 'Hydration and fibre',
+    shelf: 'Food and protein',
+    readMinutes: 3,
+    summary: 'Two litres and 25 grams. The pair that prevents most constipation, headaches and fatigue on GLP-1.',
+    sections: [
+      { heading: 'Why it matters more now', paragraphs: ['You are eating less, so less water and fibre arrive with food. Slower digestion means what you do eat needs both to keep moving.'] },
+      { heading: 'Water', paragraphs: ['Aim for 2 litres, more on hot days or after training. Sip through the day; big glasses on a full stomach worsen nausea. Tea and milk count. A pinch of salt or an electrolyte sachet helps if you feel light-headed.'] },
+      { heading: 'Fibre', paragraphs: ['25 to 30 g a day. Oats, beans, lentils, berries, wholegrain bread, vegetables with skins. Add gradually over two weeks, and add water with it or it backfires. A daily psyllium or chia spoonful is an easy top-up.'] },
+    ],
+    prescriberPrompt: 'If constipation persists past a week of doing both, ask about macrogol.',
+    sources: ['NHS Eatwell Guide', 'British Dietetic Association fibre fact sheet'],
+  },
+  {
+    id: 'reading-your-bloodwork',
+    title: 'Reading your bloodwork',
+    shelf: 'Bloodwork',
+    readMinutes: 5,
+    summary: 'What each marker on a typical UK panel means, what GLP-1 tends to do to it, and which questions to bring to your GP.',
+    sections: [
+      { heading: 'What to test and when', paragraphs: ['A sensible baseline before starting: HbA1c, lipids, liver function, kidney function, thyroid, B12, ferritin and vitamin D. Repeat at three to six months. Private pharmacies vary; your GP can do most of these.'] },
+      { heading: 'Metabolic and lipids', paragraphs: ['HbA1c and triglycerides usually fall. LDL and total cholesterol often improve with weight loss. HDL rises with exercise. A raised ALT often means fatty liver and improves as weight comes off.'] },
+      { heading: 'Energy markers', paragraphs: ['Low ferritin, B12 or vitamin D are common causes of fatigue that get blamed on the medicine. Reduced food intake makes them more likely. Worth checking before assuming.'] },
+      { heading: 'How the app shows it', paragraphs: ['Each result is placed against a typical UK adult range with a one-line explanation. Your lab\'s printed range wins. Results outside range get an "ask your GP" prompt, never a diagnosis.'] },
+    ],
+    prescriberPrompt: 'Ask which markers they want repeated and when.',
+    sources: ['NICE NG28 (type 2 diabetes monitoring)', 'NHS lab reference ranges', 'British Society of Gastroenterology guidance on abnormal liver tests'],
+  },
+  {
+    id: 'talking-to-your-prescriber',
+    title: 'Talking to your prescriber',
+    shelf: 'Talking to your prescriber',
+    readMinutes: 3,
+    summary: 'Reviews are short. Arrive with the numbers and three questions and you get more out of them.',
+    sections: [
+      { heading: 'Bring the summary', paragraphs: ['Settings, then "Report for your prescriber", then Save as PDF. One page: doses, side effects, weight trend, protein, sleep, latest bloods.'] },
+      { heading: 'Three questions that always earn their place', paragraphs: ['Is my side-effect pattern normal for this dose? Should I stay on this step longer? What are we watching in the next set of bloods?'] },
+      { heading: 'Be straight about the hard bits', paragraphs: ['Missed doses, alcohol, an unlicensed compound you are also using. Prescribers can only help with what they know, and none of it is new to them.'] },
+    ],
+    prescriberPrompt: 'Ask how to reach them between reviews if something changes.',
+    sources: ['NHS "It\'s OK to ask" campaign', 'GMC guidance on shared decision making'],
   },
 ]
 

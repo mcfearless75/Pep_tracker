@@ -5,7 +5,7 @@ import { FoodSearch } from '@/components/nutrition/FoodSearch'
 import { WaterButtons } from '@/components/nutrition/WaterButtons'
 import { MealList } from '@/components/nutrition/MealList'
 import { proteinTargetG } from '@/lib/nutrition/targets'
-import { isoDate } from '@/lib/dates'
+import { isoDate, addDays } from '@/lib/dates'
 import type { Meal, Profile, WaterLog, WeightLog } from '@/lib/supabase/types'
 
 export const dynamic = 'force-dynamic'
@@ -15,11 +15,12 @@ export default async function FoodPage() {
   const { data: { user } } = await supabase.auth.getUser()
   const uid = user!.id
   const today = isoDate()
-  const [profileQ, mealsQ, waterQ, weightQ] = await Promise.all([
+  const [profileQ, mealsQ, waterQ, weightQ, yesterdayQ] = await Promise.all([
     supabase.from('profiles').select('protein_target_g, protein_g_per_kg, water_target_ml, start_weight_kg').eq('id', uid).maybeSingle<Pick<Profile, 'protein_target_g' | 'protein_g_per_kg' | 'water_target_ml' | 'start_weight_kg'>>(),
     supabase.from('meals').select('*').eq('user_id', uid).eq('logged_date', today).order('logged_at').returns<Meal[]>(),
     supabase.from('water_logs').select('id, logged_at, ml').eq('user_id', uid).gte('logged_at', today).returns<WaterLog[]>(),
     supabase.from('weight_logs').select('weight_kg').eq('user_id', uid).order('logged_at', { ascending: false }).limit(1).maybeSingle<Pick<WeightLog, 'weight_kg'>>(),
+    supabase.from('meals').select('*').eq('user_id', uid).eq('logged_date', isoDate(addDays(new Date(), -1))).order('logged_at').returns<Meal[]>(),
   ])
   const profile = profileQ.data!
   const meals = mealsQ.data ?? []
@@ -52,7 +53,7 @@ export default async function FoodPage() {
 
       <MealPhotoUpload userId={uid} />
       <FoodSearch userId={uid} />
-      <MealList meals={meals} />
+      <MealList meals={meals} userId={uid} yesterday={yesterdayQ.data ?? []} />
     </div>
   )
 }
