@@ -8,7 +8,7 @@ const config: CapacitorConfig = {
   appName: 'Tracked',
   webDir: 'out',
   server: {
-    url: 'https://tracked.app',
+    url: 'https://tracked-paul-mcwilliams-projects.vercel.app',
     cleartext: false,
   },
   plugins: {
