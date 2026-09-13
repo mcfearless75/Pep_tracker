@@ -58,5 +58,8 @@ SUPABASE_SERVICE_ROLE_KEY   # server only, not used yet
 ANTHROPIC_API_KEY           # server only
 ```
 
+## Demo mode
+`TRACKED_DEMO=1 npm start` serves an in-memory seeded account (`lib/demo/`) with no network or auth: screenshots, store review, sales demos. `TRACKED_DEMO_NIGHT=1` forces night mode. Never set in production.
+
 ## Native builds
 Capacitor config in `capacitor.config.ts` points at the deployed site. Web changes ship with `git push` and need no native rebuild. Generate `android/` and `ios/` with `npx cap add` when the store build is set up; copy the Codemagic workflow from tranmere-tracker.

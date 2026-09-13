@@ -82,15 +82,17 @@ export function BloodworkEntry({ userId }: { userId: string }) {
           </div>
         </div>
       ) : (
-        <form onSubmit={saveOne} className="grid grid-cols-[1fr_auto_auto] gap-2 items-end">
-          <label className="text-xs font-semibold">Marker
+        <form onSubmit={saveOne} className="space-y-2">
+          <label className="block text-xs font-semibold">Marker
             <select className={`${field} mt-1`} value={marker} onChange={e => setMarker(e.target.value)}>
               {MARKERS.map(x => <option key={x.key} value={x.key}>{x.label} ({x.unit})</option>)}
             </select>
           </label>
-          <label className="text-xs font-semibold">Value<input inputMode="decimal" className={`${field} mt-1 w-24`} value={value} onChange={e => setValue(e.target.value)} placeholder={m.unit} /></label>
-          <label className="text-xs font-semibold">Date<input type="date" className={`${field} mt-1`} value={date} onChange={e => setDate(e.target.value)} /></label>
-          <button type="submit" disabled={busy} className="col-span-3 rounded-chip bg-accent text-accent-ink font-bold py-2.5 disabled:opacity-60">Save result</button>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="block text-xs font-semibold">Value ({m.unit})<input inputMode="decimal" className={`${field} mt-1`} value={value} onChange={e => setValue(e.target.value)} placeholder="0" /></label>
+            <label className="block text-xs font-semibold">Date<input type="date" className={`${field} mt-1`} value={date} onChange={e => setDate(e.target.value)} /></label>
+          </div>
+          <button type="submit" disabled={busy} className="w-full rounded-chip bg-accent text-accent-ink font-bold py-2.5 disabled:opacity-60">Save result</button>
         </form>
       )}
       {msg && <p className="text-xs text-good" role="status">{msg}</p>}
