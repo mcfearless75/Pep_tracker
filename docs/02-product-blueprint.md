@@ -88,17 +88,18 @@ No weekly subs. Annual default. Trial 7 days with a reminder on day 5.
 - LLM costs stay under 5p per Pro user per month because insights are batched weekly and meal photos use a small vision model with caching.
 - Content is a moat and an SEO engine. Every guide ships on the web as well as in-app.
 
-## Tech stack (solo-dev friendly, cheap to run)
+## Tech stack (decided 13 Sept 2026: reuse the Tranmere Tracker stack)
 
-- **App:** Expo (React Native) + TypeScript, Expo Router, one codebase for iOS and Android.
-- **Local-first:** SQLite (expo-sqlite with Drizzle). App works with no account. Optional sync.
-- **Backend:** Supabase (auth, Postgres, storage, edge functions, RLS). Already connected to this workspace.
-- **Health data:** react-native-health (HealthKit), react-native-health-connect (Android), Oura and Whoop OAuth via edge functions.
-- **Subscriptions:** RevenueCat.
-- **LLM:** Claude API (Haiku 4.5 for meal photos and lab extraction, Sonnet 5 for weekly insights). Prompt-cached, batched.
-- **Content:** MDX in the repo, built to app bundle and to a Next.js marketing site (same content, SEO).
-- **Analytics:** PostHog. Crash: Sentry.
-- **Design:** Tokens in code (see 03), no design tool dependency.
+- **App:** Next.js 14 App Router + TypeScript + Tailwind, PWA, wrapped as a thin Capacitor WebView for App Store and Play. Web pushes ship with `git push`; native rebuilds only for plugin or permission changes. Codemagic pipeline copied from tranmere-tracker.
+- **Backend:** Supabase project `tracked` (eu-west-2): auth (magic link), Postgres with RLS on every table, storage later for photos and PDFs.
+- **Meal scanner:** ported from Tranmere Tracker. Claude Haiku 4.5 with a cached system prompt reads the photo and returns protein-first macros. Open Food Facts for search and barcodes.
+- **Health data:** manual sleep logging now. HealthKit and Health Connect via Capacitor community plugins in weeks 7 to 8; Oura and Whoop cloud APIs after (they do not pass HRV to Apple Health).
+- **Subscriptions:** RevenueCat via Capacitor plugin, or Stripe on web first.
+- **LLM:** Claude Haiku 4.5 for photos and lab extraction, Sonnet 5 for weekly insights, batched and cached.
+- **Content:** Moments and guides as typed TypeScript in `lib/`, rendered in-app; the same objects feed a marketing site later.
+- **Analytics and crash:** PostHog, Sentry.
+
+Why not Expo: the scanner, barcode, Supabase SSR pattern and store pipeline already exist and are proven in production. Rebuilding them in React Native buys nothing in year one.
 
 ## Regulatory and store guardrails (non-negotiable)
 

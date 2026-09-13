@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tokens. Day light on :root, day dark via prefers-color-scheme, night via
+   data-mode="night" set by NightMode.tsx. See docs/03-design-and-education.md. */
+:root {
+  --bg: #F7F6F2;
+  --surface: #FFFFFF;
+  --text: #14171C;
+  --muted: #6B7280;
+  --line: #ECE8E0;
+  --accent: #1F8A8A;
+  --accent-ink: #FFFFFF;
+  --protein: #E0873A;
+  --water: #3D8BE0;
+  --steps: #2E9E63;
+  --sleep: #6F5BD9;
+  --good: #2E9E63;
+  --warn: #D9932E;
+  --bad: #D64545;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode="night"]) {
+    --bg: #0E1116;
+    --surface: #171B22;
+    --text: #EEF0F3;
+    --muted: #98A1AD;
+    --line: #242A33;
+    --accent: #3FB6B6;
+    --accent-ink: #0A1414;
+    --protein: #F0A15A;
+    --water: #63A6F2;
+    --steps: #49C583;
+    --sleep: #9B8AF0;
+    --good: #49C583;
+    --warn: #F2B04F;
+    --bad: #EF6B6B;
+  }
+}
+:root[data-mode="night"] {
+  --bg: #14110E;
+  --surface: #1C1814;
+  --text: #D9CFC0;
+  --muted: #8A7F70;
+  --line: #2A241D;
+  --accent: #C48A3F;
+  --accent-ink: #1A130A;
+  --protein: #C48A3F;
+  --water: #7E6E58;
+  --steps: #7C9E6B;
+  --sleep: #A08BC7;
+  --good: #7C9E6B;
+  --warn: #C48A3F;
+  --bad: #B26A5A;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@layer utilities {
+  .safe-top { padding-top: max(env(safe-area-inset-top), 0px); }
+  .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .text-balance { text-wrap: balance; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
