@@ -29,8 +29,9 @@ export async function POST(request: Request) {
     if (cached) return NextResponse.json({ body: cached.body, cached: true })
   }
 
-  const since = addDays(now, -7).toISOString()
-  const sinceDate = isoDate(addDays(now, -7))
+  // Seven calendar days including today.
+  const since = addDays(now, -6).toISOString()
+  const sinceDate = isoDate(addDays(now, -6))
   const [profile, meds, doses, weights, meals, water, se, training, sleep] = await Promise.all([
     supabase.from('profiles').select('display_name, protein_target_g, protein_g_per_kg, water_target_ml, start_weight_kg').eq('id', uid).maybeSingle(),
     supabase.from('medications').select('id, name, dose_mg, start_date, interval_days').eq('user_id', uid).eq('active', true).order('created_at').limit(1),
